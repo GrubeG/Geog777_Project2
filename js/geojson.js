@@ -134,6 +134,37 @@ function createMap(){
     //Add layer control
     L.control.layers(baseMaps, overlayMaps, {collapsed:false}).addTo(map);
     
+    var wfstPointOptions = {
+          crs: L.CRS.EPSG4326,
+          showExisting: true,
+          geometryField: 'geom',
+          url: 'http://localhost:8080/geoserver/wfs',
+          typeNS: 'geog777',
+          typeName: 'seki_trees',
+          maxFeatures: 90,
+          opacity: 1,
+          style: function(layer) {
+            // you can use if statemt etc
+            return {
+              color: 'black',
+              weight: 1
+            }
+          },
+        };
+    
+        var wfstPoint = new L.WFST(wfstPointOptions, new L.Format.GeoJSON({
+          crs: L.CRS.EPSG4326,
+          pointToLayer: function (geoJsonPoint, latlng) {
+            var layer = new L.CircleMarker(latlng, {
+              radius: 10,
+            });
+            return layer;
+          },
+        }));
+        wfstPoint.addTo(map);
+    
+    
+    
 };
 
 

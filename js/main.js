@@ -28,8 +28,9 @@ var old_html = $("#panel2").html();
 //function to retrieve the park data and place it on the map
 function getData(map){
     //load the data from the json
-    $.ajax("data/NationalParks.geojson",  {
-        dataType: "json",
+    $.ajax("http://localhost:8080/geoserver/geog777/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=geog777%3ANationalParksFinal&outputFormat=text/javascript&format_options=callback:getJson",  {
+        dataType: "jsonp",
+        jsonpCallback: 'getJson',
         success: function(response){
             
             NationalParksPoly(response, map);
