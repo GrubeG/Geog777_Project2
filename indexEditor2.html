@@ -121,20 +121,60 @@
           visible: true
         });
         
-        // Create GroupLayer with the two MapImageLayers created above
-        // as children layers.
-        var OtherGroupLayer = new GroupLayer({
-          title: "SEKI Layers",
-          visible: true,
-          visibilityMode: "exclusive",
-          layers: [layerBoundary],
-          opacity: 0.50
+        // add the park roads featurelayer
+        var layerRoads = new FeatureLayer({
+          url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/seki_roads/FeatureServer/0",
+          //outFields: ["*"],
+          title: "Park Roads",
+          visible: true
         });
+        
+        // add the park trails featurelayer
+        var layerTrails = new FeatureLayer({
+          url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/seki_trails/FeatureServer/0",
+          //outFields: ["*"],
+          title: "Park Trails",
+          visible: true
+        });
+        
+        // add the park points of interest featurelayer
+        var layerPOI = new FeatureLayer({
+          url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/seki_poi/FeatureServer/0",
+          //outFields: ["*"],
+          title: "Points of Interest",
+          visible: true
+        });
+        
+        // add the park groves featurelayer
+        var layerGroves = new FeatureLayer({
+          url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/CA_SEGI_groves/FeatureServer/0",
+          //outFields: ["*"],
+          title: "Sequoia Groves",
+          visible: true
+        });
+        
+        // add the park fire history featurelayer
+        var layerFireHistory = new FeatureLayer({
+          url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/seki_fhst/FeatureServer/0",
+          //outFields: ["*"],
+          title: "Fire History",
+          visible: false
+        });
+        
+//        // Create GroupLayer with the two MapImageLayers created above
+//        // as children layers.
+//        var OtherGroupLayer = new GroupLayer({
+//          title: "SEKI Layers",
+//          visible: true,
+//          visibilityMode: "exclusive",
+//          layers: [layerBoundary, layerRoads],
+//          opacity: 0.50
+//        });
 
         // Create a map and add the group layer to it
         var map = new Map({
           basemap: "satellite",
-          layers: [OtherGroupLayer]
+          layers: [layerFireHistory, layerGroves, layerPOI, layerTrails, layerRoads, layerBoundary]
         });
 
         // initial extent of the view and home button
@@ -254,7 +294,7 @@
           });
 
           // Add widget to the top right corner of the view
-          view.ui.add(layerList, "top-right");
+          view.ui.add(layerList, "bottom-left");
         });
             
 
@@ -327,6 +367,8 @@
                 "UserName"];
               inputUserType.value = feature.attributes[
                 "UserType"];
+              inputUserType.value = feature.attributes[
+                "GroveName"];
               attributeEditing.style.display = "block";
               updateInstructionDiv.style.display = "none";
             }
@@ -409,6 +451,7 @@
           attributeEditing = dom.byId("featureUpdateDiv");
           inputUserName = dom.byId("inputUserName");
           inputUserType = dom.byId("inputUserType");
+          inputGroveName = dom.byId("inputGroveName");
 
           // *****************************************************
           // btnUpdate click event
@@ -418,6 +461,7 @@
             if (editFeature) {
               editFeature.attributes["UserName"] = inputUserName.value;
               editFeature.attributes["UserType"] = inputUserType.value;
+              editFeature.attributes["GroveName"] = inputGroveName.value;
 
               var edits = {
                 updateFeatures: [editFeature]
@@ -440,8 +484,6 @@
                 point = event.mapPoint.clone();
                 point.z = undefined;
                 point.hasZ = false;
-                
-                
 
                 newTree = new Graphic({
                   geometry: point,
@@ -528,11 +570,14 @@
       <h3 class="list-heading">Enter the tree information:</h3>
 
       <div id="attributeArea">
-        <label for="inputUserName">UserName:</label>
+        <label for="inputUserName">User Name:</label>
         <input class="inputInfo" type="text" id="inputUserName" placeHolder="Enter UserName">
         <br>
-        <label for="inputUserType">Contact:</label>
+        <label for="inputUserType">User Type:</label>
         <input class="inputInfo" type="text" id="inputUserType" placeHolder="Enter user type">
+        <br>
+        <label for="inputGroveName">Grove Name:</label>
+        <input class="inputInfo" type="text" id="inputGroveName" placeHolder="Enter grove name">
         <br>
         <input type="button" class="edit-button" value="Update tree info" id="btnUpdate">
       </div>
