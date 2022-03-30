@@ -6,7 +6,7 @@
       content="initial-scale=1,maximum-scale=1,user-scalable=no"
     />
     <title>
-      Popup with edit action | Sample | ArcGIS API for JavaScript 4.23
+      Sequoia and Kings Canyon Tree Locator
     </title>
 
     <link
@@ -37,6 +37,35 @@
         width: 35%;
       }
         
+      #queryDiv {
+        padding: 14px;
+        border-radius: 5px;
+        width: 35%;
+      }
+        
+     #pois-filter {
+        height: 160px;
+        width: 100%;
+        visibility: hidden;
+      }
+
+      .poi-item {
+        width: 100%;
+        padding: 12px;
+        text-align: center;
+        vertical-align: baseline;
+        cursor: pointer;
+        height: 40px;
+      }
+
+      .poi-item:focus {
+        background-color: dimgrey;
+      }
+
+      .poi-item:hover {
+        background-color: dimgrey;
+      }
+        
         
     </style>
     <script>
@@ -52,7 +81,18 @@
         "esri/widgets/Home",
         "esri/widgets/Search",
         "esri/Viewpoint",
-        "esri/widgets/Locate"
+        "esri/widgets/Locate",
+        "esri/layers/GraphicsLayer",
+        "esri/geometry/geometryEngine",
+        "esri/Graphic",
+        "esri/symbols/SimpleFillSymbol",
+        "esri/symbols/SimpleMarkerSymbol",
+        "esri/config",
+          
+        "dojo/on",
+        "dojo/dom",
+        "dojo/dom-construct",
+        "dojo/domReady!"
       ], (
         Map,
         FeatureLayer,
@@ -65,14 +105,23 @@
         Home,
         Search,
         Viewpoint,
-        Locate
+        Locate,
+        GraphicsLayer,
+        geometryEngine,
+        Graphic,
+        SimpleFillSymbol,
+        SimpleMarkerSymbol,
+        esriConfig,
+        on, dom, domConstruct
       ) => {
           
+        esriConfig.apiKey = "AAPKd7a5f0028e3d432faec9c8e03740f0d8ntcrv-SGuCaGKZrLrQxv4azO6TaiERQO5QwoBDUznyrB6hxLK2EZe7oCwvq7bldk";
           
         // add the park outline featurelayer
         var layerBoundary = new FeatureLayer({
           url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/seki_boundary/FeatureServer/0",
           //outFields: ["*"],
+          opacity: 0.3,
           title: "Park Boundaries",
           visible: true
         });
@@ -81,11 +130,12 @@
         var layerGroves = new FeatureLayer({
           url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/CA_SEGI_groves/FeatureServer/0",
           //outFields: ["*"],
+          opacity: 0.5,
           title: "Sequoia Groves",
           visible: true,
           popupTemplate: {
             // autocasts as new PopupTemplate()
-            title: "Grove_Name",
+            title: "{Grove_Name}",
             overwriteActions: true
           }
         });
@@ -94,6 +144,7 @@
         var layerRoads = new FeatureLayer({
           url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/seki_roads/FeatureServer/0",
           //outFields: ["*"],
+          opacity: 0.8,
           title: "Park Roads",
           visible: true,
           popupTemplate: {
@@ -107,6 +158,7 @@
         var layerTrails = new FeatureLayer({
           url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/seki_trails/FeatureServer/0",
           //outFields: ["*"],
+          opacity: 0.8,
           title: "Park Trails",
           visible: true,
           popupTemplate: {
@@ -115,13 +167,63 @@
             overwriteActions: true
           }
         });
+          
+        // View how each marker
+        // symbol is created for Points of Interest
+        const layerPOIRenderer = {
+          type: "unique-value",
+          field: "POITYPE",
+          uniqueValueInfos: [
+            {
+              value: "Restroom",
+              symbol: {
+                type: "picture-marker",
+                url: "https://developers.arcgis.com/javascript/latest/sample-code/visualization-point-styles/live/Museum.png",
+                contentType: "image/png",  
+              }   
+            },
+            {
+              value: "Trailhead",
+              symbol: {
+                type: "picture-marker",
+                url: "https://developers.arcgis.com/javascript/latest/sample-code/visualization-point-styles/live/Restaurant.png",
+                contentType: "image/png",
+              }
+            },
+            {
+              value: "Ranger Station",
+              symbol: {
+                type: "picture-marker",
+                url: "https://developers.arcgis.com/javascript/latest/sample-code/visualization-point-styles/live/Church.png",
+                contentType: "image/png",
+              }
+            },
+            {
+              value: "Campground",
+              symbol: {
+                type: "picture-marker",
+                url: "https://developers.arcgis.com/javascript/latest/sample-code/visualization-point-styles/live/Hotel.png",
+                contentType: "image/png",
+              }
+            },
+            {
+              value: "Telephone",
+              symbol: {
+                type: "picture-marker",
+                url: "https://developers.arcgis.com/javascript/latest/sample-code/visualization-point-styles/live/Park.png",
+                contentType: "image/png",
+              }
+            },
+          ]
+        };
         
         // add the park points of interest featurelayer
         var layerPOI = new FeatureLayer({
           url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/seki_poi/FeatureServer/0",
-          //outFields: ["*"],
+          outFields: ["POITYPE"],
           title: "Points of Interest",
           visible: true,
+          renderer: layerPOIRenderer,
           popupTemplate: {
             // autocasts as new PopupTemplate()
             title: "{POINAME}: </br>{POITYPE}",
@@ -135,6 +237,7 @@
         var layerFireHistory = new FeatureLayer({
           url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/seki_fhst/FeatureServer/0",
           //outFields: ["*"],
+          opacity: 0.8,
           title: "Fire History",
           visible: false
         });
@@ -142,10 +245,10 @@
         // Create the Map
         const map = new Map({
           basemap: "topo-vector",
-          layers: [layerFireHistory, layerGroves, layerPOI, layerTrails, layerRoads, layerBoundary]
+          layers: [layerBoundary, layerFireHistory, layerGroves, layerTrails, layerRoads, layerPOI]
         });
           
-        let editor, features, editExpand;
+        let editor, features, editExpand, floodLayerView, queryLayerView;
           
           
          // *****************************************************
@@ -158,23 +261,6 @@
             view: view
           });
           view.ui.add(homeButton, "top-left");
-
-          // LayerList
-          layerList = new LayerList({
-              container: document.createElement("div"),
-              view: view
-            });
-            
-            layerListExpand = new Expand({
-              expandIconClass: "esri-icon-layer-list",
-              expandTooltip: "Expand LayerList",
-              view: view,
-              content: layerList
-            });
-            view.ui.add(layerListExpand, {
-                position: "bottom-left",
-                index: 1
-            });
             
           var locateBtn = new Locate({
             view: view,
@@ -320,6 +406,13 @@
         var layerTrees = new FeatureLayer({
           url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/seki_trees/FeatureServer/0",
           outFields: ["*"],
+          title: "Sequoia Trees",
+          visible: true,
+//          popupTemplate: {
+//            // autocasts as new PopupTemplate()
+//            title: "{TRLNAME}: </br>{TRLCLASS}",
+//            overwriteActions: true
+//          }
           popupTemplate: template
         });
         map.add(layerTrees);
@@ -339,66 +432,31 @@
         // and add it to the top-right corner of the view.
         // *****************************************************
         
-//        view.when(() => {
-//          // Create the LayerList widget with the associated actions
-//          // and add it to the top-right corner of the view.
-//
-//          var layerList = new LayerList({
-//            view: view,
-//            container: document.createElement("layerList"),
-//            // executes for each ListItem in the LayerList
-//            listItemCreatedFunction: defineActions
-//          });
-//
-//          // Event listener that fires each time an action is triggered
-//
-//          layerList.on("trigger-action", (event) => {
-//            // The layer visible in the view at the time of the trigger.
-//            var visibleLayer = OtherGroupLayer.visible ? OtherGroupLayer : censusLayer;
-//
-//            // Capture the action id.
-//            const id = event.action.id;
-//
-//            if (id === "full-extent") {
-//              // if the full-extent action is triggered then navigate
-//              // to the full extent of the visible layer
-//              view.goTo(visibleLayer.fullExtent).catch((error) => {
-//                if (error.name != "AbortError") {
-//                  console.error(error);
-//                }
-//              });
-//            }
-////              else if (id === "information") {
-////              // if the information action is triggered, then
-////              // open the item details page of the service layer
-////              window.open(visibleLayer.url);
-////            } else if (id === "increase-opacity") {
-////              // if the increase-opacity action is triggered, then
-////              // increase the opacity of the GroupLayer by 0.25
-////
-////              if (demographicGroupLayer.opacity < 1) {
-////                demographicGroupLayer.opacity += 0.25;
-////              }
-////            } else if (id === "decrease-opacity") {
-////              // if the decrease-opacity action is triggered, then
-////              // decrease the opacity of the GroupLayer by 0.25
-////
-////              if (demographicGroupLayer.opacity > 0) {
-////                demographicGroupLayer.opacity -= 0.25;
-////              }
-////            }
-//          });
-//
-//          // Add widget to the top right corner of the view
-//          view.ui.add(layerList, "bottom-left");
-//        });
+          // LayerList
+          layerList = new LayerList({
+              container: document.createElement("div"),
+              view: view
+            });
+            
+          let layerListExpand = new Expand({
+              expandIconClass: "esri-icon-layers",
+              expandTooltip: "Expand Layer List",
+              view: view,
+              expanded: false,
+              content: layerList,
+              group: "top-right"
+            });
+//            view.ui.add(layerListExpand, {
+//                position: "bottom-left",
+//                index: 1
+//            });
           
         // *****************************************************
         // Create the Search widget with the associated actions
         // and add it to the top-right corner of the view.
         // *****************************************************
           
-        const searchWidget = new Search({
+        var searchWidget = new Search({
           view: view,
           allPlaceholder: "Enter Location",
           includeDefaultSources: false,
@@ -411,7 +469,7 @@
               outFields: ["POINAME", "POITYPE"],
               name: "Point of Interest",
               zoomScale: 10000,
-              placeholder: "Please enter feature name"
+              placeholder: "Example: Sherman Tree"
 //              resultSymbol: {
 //                type: "picture-marker", // autocasts as new PictureMarkerSymbol()
 //                url: "https://developers.arcgis.com/javascript/latest/sample-code/widgets-search-multiplesource/live/images/senate.png",
@@ -425,7 +483,7 @@
               //suggestionTemplate: "{Name}, Party: {Party}",
               exactMatch: false,
               outFields: ["Grove_Name"],
-              placeholder: "example: Atwell",
+              placeholder: "Example: Atwell",
               name: "Sequoia Grove",
 
             },
@@ -435,17 +493,25 @@
               //suggestionTemplate: "{Name}, Party: {Party}",
               exactMatch: false,
               outFields: ["TRLNAME", "TRLCLASS"],
-              placeholder: "example: Giant Forest",
+              placeholder: "Example: Giant Forest",
               name: "SEKI Trails",
 
             },
           ]
         });
+          
+        //expand widget
+          let searchExpand = new Expand({
+            expandIconClass: "esri-icon-search",
+            expandTooltip: "Expand Search",
+            expanded: true,
+            view: view,
+            content: searchWidget,
+            group: "top-right"
+          });
 
         // Add the search widget to the top left corner of the view
-        view.ui.add(searchWidget, {
-          position: "top-right"
-        });
+        //view.ui.add(searchWidget, {position: "top-right"});
       
           
         // *****************************************************
@@ -455,7 +521,7 @@
 
         view.when(() => {
           // Create the Editor with the specified layer and a list of field configurations
-          editor = new Editor({
+          var editor = new Editor({
             view: view,
             container: document.createElement("div"),
             layerInfos: [
@@ -514,100 +580,199 @@
             ]
           });
             
-          // Execute each time the "Edit feature" action is clicked
-          function editThis() {
-            // If the EditorViewModel's activeWorkflow is null, make the popup not visible
-            if (!editor.viewModel.activeWorkFlow) {
-              view.popup.visible = true;
-              // Call the Editor update feature edit workflow
-
-              editor.startUpdateWorkflowAtFeatureEdit(
-                view.popup.selectedFeature
-              );
-              view.ui.add(editor, "top-right");
-              view.popup.spinnerEnabled = true;
-            }
-
-            // We need to set a timeout to ensure the editor widget is fully rendered. We
-            // then grab it from the DOM stack
-            setTimeout(() => {
-              // Use the editor's back button as a way to cancel out of editing
-              let arrComp = editor.domNode.getElementsByClassName(
-                "esri-editor__back-button esri-interactive"
-              );
-              if (arrComp.length === 1) {
-                // Add a tooltip for the back button
-                arrComp[0].setAttribute(
-                  "title",
-                  "Cancel edits, return to popup"
-                );
-                // Add a listener to listen for when the editor's back button is clicked
-                arrComp[0].addEventListener("click", (evt) => {
-                  // Prevent the default behavior for the back button and instead remove the editor and reopen the popup
-                  evt.preventDefault();
-                  view.ui.remove(editor);
-                  view.popup.open({
-                    features: features
-                  });
-                });
-              }
-            }, 150);
-          }
-
-          // Event handler that fires each time an action is clicked
-          view.popup.on("trigger-action", (event) => {
-            if (event.action.id === "edit-this") {
-              editThis();
-            }
-          });
-            
         //expand widget
           editExpand = new Expand({
             expandIconClass: "esri-icon-edit",
             expandTooltip: "Expand Edit",
             expanded: true,
             view: view,
-            content: editor
+            content: editor,
+            group: "top-right"
           });
-          view.ui.add(editExpand, "top-right");
-          //view.ui.add([editExpand, layerList], "bottom-right");
+            
+          //view.ui.add(editExpand, "top-right");
+          
             
         });
+          
+        // *****************************************************
+        // Create the Query widget with the associated actions
+        // and add it to the top-right corner of the view.
+        // *****************************************************
+        
+        
 
-        // Watch when the popup is visible
-        view.popup.watch("visible", (event) => {
-          // Check the Editor's viewModel state, if it is currently open and editing existing features, disable popups
-          if (editor.viewModel.state === "editing-existing-feature") {
-            view.popup.close();
-          } else {
-            // Grab the features of the popup
-            features = view.popup.features;
+        // additional query fields initially set to null for basic query
+        let distance = 0.5;
+        let units = "miles";
+
+        //create graphic for mouse point click
+        const pointGraphic = new Graphic({
+          symbol: {
+            type: "simple-marker", // autocasts as new SimpleMarkerSymbol()
+            color: [0, 0, 139],
+            outline: {
+              color: [255, 255, 255],
+              width: 1.5
+            }
           }
         });
 
-        layerTrees.on("apply-edits", () => {
-          // Once edits are applied to the layer, remove the Editor from the UI
-          view.ui.remove(editor);
-
-          // Iterate through the features
-          features.forEach((feature) => {
-            // Reset the template for the feature if it was edited
-            feature.popupTemplate = template;
-          });
-
-          // Open the popup again and reset its content after updates were made on the feature
-          if (features) {
-            view.popup.open({
-              features: features
-            });
+        // Create graphic for distance buffer
+        const bufferGraphic = new Graphic({
+          symbol: {
+            type: "simple-fill", // autocasts as new SimpleFillSymbol()
+            color: [173, 216, 230, 0.2],
+            outline: {
+              // autocasts as new SimpleLineSymbol()
+              color: [255, 255, 255],
+              width: 1
+            }
           }
+        });
 
-          // Cancel the workflow so that once edits are applied, a new popup can be displayed
-          editor.viewModel.cancelWorkflow();
+        // when query type changes, set appropriate values
+        var queryOpts = document.getElementById("query-type");
+
+        queryOpts.addEventListener("change", () => {
+          switch (queryOpts.value) {
+            // values set for distance query
+            case "OneMile":
+              distance = 1;
+              units = "miles";
+              break;
+            case "TwoMiles":
+              distance = 2;
+              units = "miles";
+              break;
+            case "FiveMiles":
+              distance = 5;
+              units = "miles";
+              break;
+            default:
+              // Default set to basic query
+              distance = 0.5;
+              units = "miles";
+          }
+        });
+//        layerGroves.load().then(() => {
+//          // Set the view extent to the data extent
+//          //view.extent = layerGroves.fullExtent;
+//          layerGroves.popupTemplate = layerGroves.createPopupTemplate();
+//        });
+
+        
+
+        function queryFeatures(screenPoint) {
+          const point = view.toMap(screenPoint);
+          layerGroves.queryFeatures({
+              geometry: point,
+              // distance and units will be null if basic query selected
+              distance: distance,
+              units: units,
+              spatialRelationship: "intersects",
+              returnGeometry: false,
+              returnQueryGeometry: true,
+              outFields: ["*"]
+            })
+            .then((featureSet) => {
+              // set graphic location to mouse pointer and add to mapview
+              pointGraphic.geometry = point;
+              view.graphics.add(pointGraphic);
+              // open popup of query result
+              view.popup.open({
+                location: point,
+                features: featureSet.features,
+                featureMenuOpen: true
+              });
+              if (featureSet.queryGeometry) {
+                bufferGraphic.geometry = featureSet.queryGeometry;
+                view.graphics.add(bufferGraphic);
+              }
+            });
+        }
+          
+        let queryExpand = new Expand({
+            view: view,
+            content: queryOpts,
+            expandTooltip: "Expand Query",
+            expandIconClass: "esri-icon-review",
+            group: "top-right"
+          });
+          //start query tool when user clicks expand button
+          
+          queryExpand.watch("expanded", () => {
+            if (queryExpand.expanded) {
+                mouseEvtHandler = view.on("click", (event) => {
+                    view.graphics.remove(pointGraphic);
+                    if (view.graphics.includes(bufferGraphic)) {
+                        view.graphics.remove(bufferGraphic);
+                    }
+                    queryFeatures(event);
+                });
+            }
+            //clear the query when user closes the expand widget
+            if (!queryExpand.expanded) {
+                mouseEvtHandler.remove();
+                mouseEvtHandler = null;
+                view.graphics.remove(pointGraphic);
+                    if (view.graphics.includes(bufferGraphic)) {
+                        view.graphics.remove(bufferGraphic);
+                    }
+            }
+          }); 
+          
+          //view.ui.add(queryExpand, "top-right");
+          
+        // *****************************************************
+        // Create the Filter widget with the associated actions
+        // and add it to the top-right corner of the view.
+        // *****************************************************
+          
+        const poisNodes = document.querySelectorAll(`.poi-item`);
+        const poisElement = document.getElementById("poi-filter");
+
+        // click event handler for pois choices
+        poisElement.addEventListener("click", filterBypoi);
+
+        // User clicked on Winter, Spring, Summer or Fall
+        // set an attribute filter on flood warnings layer view
+        // to display the warnings issued in that poi
+        function filterBypoi(event) {
+          const selectedpoi = event.target.getAttribute("data-poi");
+          floodLayerView.filter = {
+            where: "POITYPE = '" + selectedpoi + "'"
+          };
+        }
+
+        view.whenLayerView(layerPOI).then((layerView) => {
+          // flash flood warnings layer loaded
+          // get a reference to the flood warnings layerview
+          floodLayerView = layerView;
+
+          // set up UI items
+          poisElement.style.visibility = "visible";
+        
+          let poisExpand = new Expand({
+            view: view,
+            content: poisElement,
+            expandTooltip: "Expand Filter",
+            expandIconClass: "esri-icon-filter",
+            group: "top-right"
+          });
+          //clear the filters when user closes the expand widget
+          poisExpand.watch("expanded", () => {
+            if (!poisExpand.expanded) {
+              floodLayerView.filter = null;
+            }
+          });
+          //view.ui.add(poisExpand, "top-right");
+          view.ui.add([searchExpand, editExpand, layerListExpand, poisExpand, queryExpand], "top-right");
         });
           
         
-
+          
+          
         
       });
     </script>
@@ -623,7 +788,25 @@
       </h4>
     </div>
     <div id="infoToolbar" class="esri-widget">
-        <h3>Sample text</h3>
+        <h3>Sequoia and Kings Canyon Tree Locator</h3>
+    </div>
+    <div id="poi-filter" class="esri-widget">
+      <div class="poi-item visible-poi" data-poi="Restroom">Restroom</div>
+      <div class="poi-item visible-poi" data-poi="Ranger Station">Ranger HQ</div>
+      <div class="poi-item visible-poi" data-poi="Trailhead">Trailhead</div>
+      <div class="poi-item visible-poi" data-poi="Campground">Campground</div>
+    </div>
+    <div id="optionsDiv" class="esri-widget">
+      <p>
+        Select a query type and click a point on the map to view the results.
+      </p>
+      <select id="query-type" class="esri-widget">
+        <option value="distance">1/2 Mile</option>
+        <option value="OneMile">One Mile</option>
+        <option value="TwoMiles">Two Miles</option>
+        <option value="FiveMiles">Five Miles</option>
+        
+      </select>
     </div>
   </body>
 </html>
