@@ -17,7 +17,7 @@
    height="24.1"
    viewBox="0 0 24.2 24.1"
    xml:space="preserve"
-   sodipodi:docname="visitor-center-black-22.svg"
+   sodipodi:docname="ranger-station-black-22.svg"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    inkscape:export-filename="C:\Users\Greg\Geog777_Project2\img\campground-black-22.png"
    inkscape:export-xdpi="96"
@@ -65,8 +65,10 @@
    y="0.10967298" />
 
 
-<path
-   inkscape:connector-curvature="0"
-   d="M 21,14.100001 14,9.4000008 v -4.3 h 2 v 1 h 3 v -4 h -3 v -1 h -2 -1 v 7.7 l -1,-0.7 -9,6.0000002 H 2 v 1 h 2 v 8 h 16 v -8 h 2 v -1 z m -7,6 -2,2 h -2 l 1,-6 h -1 l 1,-1 h 3 l -1,1 -0.7,4 z m 0,-6 h -2 v -2 h 2 z"
-   id="path16004"
-   style="fill:#00ffff" /></svg>
+<g
+   transform="translate(1,1.1000008)"
+   id="g12401"
+   style="fill:#0000ff"><polygon
+     points="1,13 1,14 3,14 3,22 9,22 9,16 13,16 13,22 19,22 19,14 21,14 21,13 20,13 13,8.3 13,4 15,4 15,5 18,5 18,1 15,1 15,0 13,0 12,0 12,7.7 11,7 2,13 "
+     id="polygon12399"
+     style="fill:#0000ff" /></g></svg>

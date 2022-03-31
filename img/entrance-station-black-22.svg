@@ -17,7 +17,7 @@
    height="24.1"
    viewBox="0 0 24.2 24.1"
    xml:space="preserve"
-   sodipodi:docname="visitor-center-black-22.svg"
+   sodipodi:docname="entrance-station-black-22.svg"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    inkscape:export-filename="C:\Users\Greg\Geog777_Project2\img\campground-black-22.png"
    inkscape:export-xdpi="96"
@@ -40,7 +40,7 @@
    showgrid="true"
    inkscape:pagecheckerboard="true"
    inkscape:zoom="31.97"
-   inkscape:cx="13.382278"
+   inkscape:cx="14.039144"
    inkscape:cy="12.662217"
    inkscape:window-x="-9"
    inkscape:window-y="-9"
@@ -57,16 +57,20 @@
      originx="0"
      originy="-3.8146972e-07" /></sodipodi:namedview>
 <rect
-   style="opacity:0.8;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2.02017426;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.98843934"
+   style="opacity:0.8;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.98843932"
    id="rect4580"
-   width="24.717434"
-   height="23.98024"
-   x="-0.36509848"
-   y="0.10967298" />
+   width="24.20586"
+   height="24.000414"
+   x="0.00016628696"
+   y="0.099585876" />
 
 
-<path
+<polygon
+   transform="translate(0.99999999,1.6512985)"
+   points="16,14 18,14 18,21 19,21 19,14 21,14 21,9 16,9 "
+   id="polygon4631"
+   style="fill:#008000" /><path
    inkscape:connector-curvature="0"
-   d="M 21,14.100001 14,9.4000008 v -4.3 h 2 v 1 h 3 v -4 h -3 v -1 h -2 -1 v 7.7 l -1,-0.7 -9,6.0000002 H 2 v 1 h 2 v 8 h 16 v -8 h 2 v -1 z m -7,6 -2,2 h -2 l 1,-6 h -1 l 1,-1 h 3 l -1,1 -0.7,4 z m 0,-6 h -2 v -2 h 2 z"
-   id="path16004"
-   style="fill:#00ffff" /></svg>
+   d="M 12,22.651298 V 7.6512985 h 2 l -6,-6 -6,6 H 4 V 22.651298 Z m -2,-7 H 6 V 8.6512985 h 4 z"
+   id="path4633"
+   style="fill:#008000" /></svg>

@@ -17,7 +17,7 @@
    height="24.1"
    viewBox="0 0 24.2 24.1"
    xml:space="preserve"
-   sodipodi:docname="visitor-center-black-22.svg"
+   sodipodi:docname="sleeping-shelter-black-22.svg"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    inkscape:export-filename="C:\Users\Greg\Geog777_Project2\img\campground-black-22.png"
    inkscape:export-xdpi="96"
@@ -65,8 +65,21 @@
    y="0.10967298" />
 
 
-<path
+<circle
+   cx="9.5"
+   cy="16.6"
+   r="1.5"
+   id="circle13597"
+   style="fill:#ffff00" /><path
    inkscape:connector-curvature="0"
-   d="M 21,14.100001 14,9.4000008 v -4.3 h 2 v 1 h 3 v -4 h -3 v -1 h -2 -1 v 7.7 l -1,-0.7 -9,6.0000002 H 2 v 1 h 2 v 8 h 16 v -8 h 2 v -1 z m -7,6 -2,2 h -2 l 1,-6 h -1 l 1,-1 h 3 l -1,1 -0.7,4 z m 0,-6 h -2 v -2 h 2 z"
-   id="path16004"
-   style="fill:#00ffff" /></svg>
+   d="m 21.8,16.100001 c 0.6,0 1.2,0.3 1.2,0.9 v 3.1 h -9 v -4 z"
+   id="path13599"
+   style="fill:#ffff00" /><path
+   inkscape:connector-curvature="0"
+   d="m 11.5,18.700001 h -2 c -0.4,0 -0.7,0.3 -0.7,0.7 0,0.4 0.3,0.7 0.7,0.7 h 2.8 c 0.4,0 0.7,-0.3 0.7,-0.7 v -2.9 c 0,-0.4 -0.3,-0.7 -0.7,-0.7 -0.4,0 -0.8,0.3 -0.8,0.7 z"
+   id="path13601"
+   style="fill:#ffff00" /><polygon
+   points="4,10.2 4,22 5,22 6,22 22,22 22,20 6,20 6,9.2 22,1.6 22,0 20.7,0 0,9.9 0,12.1 "
+   id="polygon13603"
+   transform="translate(1,1.1000012)"
+   style="fill:#ffff00" /></svg>
