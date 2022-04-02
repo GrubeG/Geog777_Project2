@@ -29,6 +29,7 @@
         padding: 14px;
         border-radius: 5px;
         width: 35%;
+        font-weight: bold;
       }
         
       #infoToolbar {
@@ -88,7 +89,9 @@
         "esri/Graphic",
         "esri/symbols/SimpleFillSymbol",
         "esri/symbols/SimpleMarkerSymbol",
+        "esri/widgets/BasemapToggle",
         "esri/config",
+        
           
         "dojo/on",
         "dojo/dom",
@@ -112,6 +115,7 @@
         Graphic,
         SimpleFillSymbol,
         SimpleMarkerSymbol,
+        BasemapToggle,
         esriConfig,
         on, dom, domConstruct
       ) => {
@@ -164,7 +168,7 @@
           visible: true,
           popupTemplate: {
             // autocasts as new PopupTemplate()
-            title: "{TRLNAME}: </br>{TRLCLASS}",
+            title: "{TRLNAME}: </br>Trail {TRLCLASS}",
             overwriteActions: true
           }
         });
@@ -328,6 +332,7 @@
             index: 2
             });
             
+            
         }
           
           
@@ -403,7 +408,7 @@
               fieldName: "OverallCon"
             }
           ],
-          actions: [editThisAction]
+          //actions: [editThisAction]
         };
 
         // Function that creates two popup elements for the template: attachments and text
@@ -487,10 +492,37 @@
               content: layerList,
               group: "top-right"
             });
+          
+          //add instruction information when user expands the widget
+          layerListExpand.watch("expanded", () => {
+            if (layerListExpand.expanded) {
+              var fieldNameText = document.getElementById('info');
+              fieldNameText.textContent = "Click the layer name or eye icon to turn that layer on/off.";
+            }
+            //clear the filters when user closes the expand widget  
+            if (!layerListExpand.expanded) {
+              var fieldNameText = document.getElementById('info');
+              fieldNameText.textContent = "Select a tool on the right to use that specific function.";
+            }
+          });
 //            view.ui.add(layerListExpand, {
 //                position: "bottom-left",
 //                index: 1
 //            });
+          
+        // *****************************************************
+        // Create the Basemap Toggle widget with the associated actions
+        // and add it to the top-right corner of the view.
+        // *****************************************************
+        
+        let basemapToggle = new BasemapToggle({
+          view: view,  // The view that provides access to the map's "streets-vector" basemap
+          nextBasemap: "hybrid"  // Allows for toggling to the "hybrid" basemap
+        });
+          
+        // Add widget to the top right corner of the view
+        view.ui.add(basemapToggle, "bottom-left");
+        
           
         // *****************************************************
         // Create the Search widget with the associated actions
@@ -545,10 +577,23 @@
           let searchExpand = new Expand({
             expandIconClass: "esri-icon-search",
             expandTooltip: "Expand Search",
-            expanded: true,
+            expanded: false,
             view: view,
             content: searchWidget,
             group: "top-right"
+          });
+          
+          //add instruction information when user expands the widget
+          searchExpand.watch("expanded", () => {
+            if (searchExpand.expanded) {
+              var fieldNameText = document.getElementById('info');
+              fieldNameText.textContent = "Click down arrow to select item type. To search, begin to type the first few letters of the feature and select from the list.";
+            }
+            //clear the filters when user closes the expand widget  
+            if (!searchExpand.expanded) {
+              var fieldNameText = document.getElementById('info');
+              fieldNameText.textContent = "Select a tool on the right to use that specific function.";
+            }
           });
 
         // Add the search widget to the top left corner of the view
@@ -625,10 +670,23 @@
           editExpand = new Expand({
             expandIconClass: "esri-icon-edit",
             expandTooltip: "Expand Edit",
-            expanded: true,
+            expanded: false,
             view: view,
             content: editor,
             group: "top-right"
+          });
+        
+        //add instruction information when user expands the widget
+          editExpand.watch("expanded", () => {
+            if (editExpand.expanded) {
+              var fieldNameText = document.getElementById('info');
+              fieldNameText.textContent = "Under Sequoia Trees, select the condition level and place a new tree location on map. Select Edit features option and click on existing point to change attribute information.";
+            }
+            //clear the filters when user closes the expand widget  
+            if (!editExpand.expanded) {
+              var fieldNameText = document.getElementById('info');
+              fieldNameText.textContent = "Select a tool on the right to use that specific function.";
+            }
           });
             
           //view.ui.add(editExpand, "top-right");
@@ -749,8 +807,11 @@
                     if (view.graphics.includes(bufferGraphic)) {
                         view.graphics.remove(bufferGraphic);
                     }
+                    
                     queryFeatures(event);
                 });
+                var fieldNameText = document.getElementById('info');
+                fieldNameText.textContent = "Select a buffer distance and click a location on the map to return the Points of Interest within that distance.";
             }
             //clear the query when user closes the expand widget
             if (!queryExpand.expanded) {
@@ -760,6 +821,8 @@
                     if (view.graphics.includes(bufferGraphic)) {
                         view.graphics.remove(bufferGraphic);
                     }
+                var fieldNameText = document.getElementById('info');
+                fieldNameText.textContent = "Select a tool on the right to use that specific function.";
             }
           }); 
           
@@ -801,16 +864,29 @@
             expandIconClass: "esri-icon-filter",
             group: "top-right"
           });
-          //clear the filters when user closes the expand widget
+            
+          //add instruction information when user expands the widget
           poisExpand.watch("expanded", () => {
+            if (poisExpand.expanded) {
+              var fieldNameText = document.getElementById('info');
+              fieldNameText.textContent = "Filter Point of Interest type by selecting from the list. Closing the Filter tool will reset to default.";
+            }
+            //clear the filters when user closes the expand widget  
             if (!poisExpand.expanded) {
               floodLayerView.filter = null;
+              var fieldNameText = document.getElementById('info');
+              fieldNameText.textContent = "Select a tool on the right to use that specific function.";
             }
           });
           //view.ui.add(poisExpand, "top-right");
           view.ui.add([searchExpand, editExpand, layerListExpand, poisExpand, queryExpand], "top-right");
         });
           
+        
+        // *****************************************************
+        // Create the info widget with the associated actions
+        // and add it to the top-right corner of the view.
+        // ***************************************************** 
         
           
           
@@ -821,12 +897,8 @@
 
   <body>
     <div id="viewDiv"></div>
-    <div id="info" class="esri-widget">
-      <h3>Select a feature to display its popup</h3>
-      <h4>
-        Edit by clicking on the "Edit feature" action within the
-        popup.
-      </h4>
+    <div id="info" class="esri-widget">   
+      Select a tool on the right to use that specific function.
     </div>
     <div id="infoToolbar" class="esri-widget">
         <h3>Sequoia and Kings Canyon Tree Locator</h3>
