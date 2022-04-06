@@ -11,7 +11,7 @@
 
     <link
       rel="stylesheet"
-      href="https://js.arcgis.com/4.23/esri/themes/light/main.css"
+      href="https://js.arcgis.com/4.23/esri/themes/dark/main.css"
     />
     <script src="https://js.arcgis.com/4.23/"></script>
 
@@ -28,14 +28,16 @@
       #info {
         padding: 14px;
         border-radius: 5px;
-        width: 35%;
+        width: 120px;
         font-weight: bold;
       }
         
       #infoToolbar {
         padding: 14px;
         border-radius: 5px;
-        width: 35%;
+        width: 250px;
+        background-color: black;
+        color: white;
       }
         
       #queryDiv {
@@ -90,6 +92,7 @@
         "esri/symbols/SimpleFillSymbol",
         "esri/symbols/SimpleMarkerSymbol",
         "esri/widgets/BasemapToggle",
+        "esri/widgets/Legend",
         "esri/config",
         
           
@@ -116,6 +119,7 @@
         SimpleFillSymbol,
         SimpleMarkerSymbol,
         BasemapToggle,
+        Legend,
         esriConfig,
         on, dom, domConstruct
       ) => {
@@ -138,11 +142,11 @@
           opacity: 0.5,
           title: "Sequoia Groves",
           visible: true,
-          popupTemplate: {
-            // autocasts as new PopupTemplate()
-            title: "{Grove_Name}",
+//          popupTemplate: {
+//            // autocasts as new PopupTemplate()
+//            title: "{Grove_Name}",
             overwriteActions: true
-          }
+//          }
         });
         
         // add the park roads featurelayer
@@ -154,7 +158,7 @@
           visible: true,
           popupTemplate: {
             // autocasts as new PopupTemplate()
-            title: "{RDNAME}: </br>{RDCLASS}",
+            title: "Road Name: {RDNAME} </br>Road Class: {RDCLASS}",
             overwriteActions: true
           }
         });
@@ -168,7 +172,7 @@
           visible: true,
           popupTemplate: {
             // autocasts as new PopupTemplate()
-            title: "{TRLNAME}: </br>Trail {TRLCLASS}",
+            title: "Trail Name: {TRLNAME} </br>Trail Class: {TRLCLASS}",
             overwriteActions: true
           }
         });
@@ -271,7 +275,7 @@
           renderer: layerPOIRenderer,
           popupTemplate: {
             // autocasts as new PopupTemplate()
-            title: "{POINAME}: </br>{POITYPE}",
+            title: "Feature: {POINAME} </br>Feature Type: {POITYPE}",
             overwriteActions: true
           }
         });
@@ -325,18 +329,9 @@
             position: "top-left",
             //index: 1
             });
-        
-        //add text information
-          view.ui.add("infoToolbar", {
-            position: "top-right",
-            index: 2
-            });
             
             
         }
-          
-          
-          
         // *****************************************************
         // Creates actions in the LayerList
         // *****************************************************
@@ -448,18 +443,68 @@
 //              return [textElement, attachmentsElement];
 //          }
         }
+        // View how each marker
+        // symbol is created for Points of Interest
+        const layerTreesRenderer = {
+          type: "unique-value",
+          field: "OverallCon",
+          uniqueValueInfos: [
+            {
+              value: "Excellent",
+              symbol: {
+                type: "picture-marker",
+                url: "img/sequoia-excellent.svg",
+                contentType: "image/svg",  
+              }   
+            },
+            {
+              value: "Good",
+              symbol: {
+                type: "picture-marker",
+                url: "img/sequoia-good.svg",
+                contentType: "image/svg",
+              }
+            },
+            {
+              value: "Average",
+              symbol: {
+                type: "picture-marker",
+                url: "img/sequoia-average.svg",
+                contentType: "image/svg",
+              }
+            },
+            {
+              value: "Poor",
+              symbol: {
+                type: "picture-marker",
+                url: "img/sequoia-poor.svg",
+                contentType: "image/svg",
+              }
+            },
+            {
+              value: "Fallen",
+              symbol: {
+                type: "picture-marker",
+                url: "img/sequoia-fallen.svg",
+                contentType: "image/svg",
+              }
+            },
+            
+          ]
+        };
 
         var layerTrees = new FeatureLayer({
           url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/seki_trees/FeatureServer/0",
           outFields: ["*"],
           title: "Sequoia Trees",
           visible: true,
-//          popupTemplate: {
-//            // autocasts as new PopupTemplate()
-//            title: "{TRLNAME}: </br>{TRLCLASS}",
-//            overwriteActions: true
-//          }
-          popupTemplate: template
+          renderer: layerTreesRenderer,
+          popupTemplate: {
+            // autocasts as new PopupTemplate()
+            title: "Tree Condition - {OverallCon}</br>Grove: {GroveName} </br>Tree Diameter: {TreeDiam} </br>Surface Fuel Level: {SurFuel} </br>Burn Damage: {BurnDamage} </br>Collector Name: {UserName} </br>Collector Role: {UserType}",
+            overwriteActions: true
+          }
+          //popupTemplate: template
         });
         map.add(layerTrees);
 
@@ -467,8 +512,8 @@
         const view = new MapView({
           container: "viewDiv",
           map: map,
-          zoom: 10,
-          center: [-118.5, 36.65]
+          zoom: 11,
+          center: [-118.59, 36.60]
         });
           
         setupView();
@@ -490,6 +535,7 @@
               view: view,
               expanded: false,
               content: layerList,
+              mode: "floating",
               group: "top-right"
             });
           
@@ -522,6 +568,66 @@
           
         // Add widget to the top right corner of the view
         view.ui.add(basemapToggle, "bottom-left");
+        
+        // *****************************************************
+        // Create and intro message widget with the associated actions
+        // and add it to the top-right corner of the view.
+        // ***************************************************** 
+        
+        //add text information
+        let infoToolbar = document.getElementById("infoToolbar")
+          
+        
+        let infoToolbarExpand = new Expand({
+              expandIconClass: "esri-icon-description",
+              expandTooltip: "Expand Information Panel",
+              view: view,
+              expanded: true,
+              content: infoToolbar,
+              mode: "floating",
+              group: "top-right"
+            });
+          
+//        view.ui.add("infoToolbar", {
+//            position: "top-right",
+//            //index: 1
+//            });
+          
+         
+        
+        // *****************************************************
+        // Create the legend widget with the associated actions
+        // and add it to the top-right corner of the view.
+        // ***************************************************** 
+          
+        let legend = new Legend({
+            view: view
+        });
+        
+        let legendExpand = new Expand({
+              expandIconClass: "esri-icon-legend",
+              expandTooltip: "Expand Legend",
+              view: view,
+              expanded: false,
+              content: legend,
+              mode: "floating",
+              group: "top-right"
+            });
+          
+          //add instruction information when user expands the widget
+          legendExpand.watch("expanded", () => {
+            if (legendExpand.expanded) {
+              var fieldNameText = document.getElementById('info');
+              fieldNameText.textContent = "View symbology of all currently active layers";
+            }
+            //clear the filters when user closes the expand widget  
+            if (!legendExpand.expanded) {
+              var fieldNameText = document.getElementById('info');
+              fieldNameText.textContent = "Select a tool on the right to use that specific function.";
+            }
+          });
+
+        //view.ui.add(legend, "bottom-right");
         
           
         // *****************************************************
@@ -579,6 +685,7 @@
             expandTooltip: "Expand Search",
             expanded: false,
             view: view,
+            mode: "floating",
             content: searchWidget,
             group: "top-right"
           });
@@ -620,7 +727,7 @@
                     {
                       type: "field",
                       fieldName: "UserName",
-                      label: "User name",
+                      label: "User Name",
                       editable: true
                     },
                     {
@@ -669,10 +776,11 @@
         //expand widget
           editExpand = new Expand({
             expandIconClass: "esri-icon-edit",
-            expandTooltip: "Expand Edit",
+            expandTooltip: "Expand Tree Editor",
             expanded: false,
             view: view,
             content: editor,
+            mode: "floating",
             group: "top-right"
           });
         
@@ -764,7 +872,7 @@
 
         function queryFeatures(screenPoint) {
           const point = view.toMap(screenPoint);
-          layerGroves.queryFeatures({
+          layerPOI.queryFeatures({
               geometry: point,
               // distance and units will be null if basic query selected
               distance: distance,
@@ -794,6 +902,7 @@
         let queryExpand = new Expand({
             view: view,
             content: queryOpts,
+            mode: "floating",
             expandTooltip: "Expand Query",
             expandIconClass: "esri-icon-review",
             group: "top-right"
@@ -860,6 +969,7 @@
           let poisExpand = new Expand({
             view: view,
             content: poisElement,
+            mode: "floating",
             expandTooltip: "Expand Filter",
             expandIconClass: "esri-icon-filter",
             group: "top-right"
@@ -879,14 +989,11 @@
             }
           });
           //view.ui.add(poisExpand, "top-right");
-          view.ui.add([searchExpand, editExpand, layerListExpand, poisExpand, queryExpand], "top-right");
+          view.ui.add([infoToolbarExpand, editExpand, searchExpand, poisExpand, queryExpand, legendExpand, layerListExpand], "top-right");
         });
           
         
-        // *****************************************************
-        // Create the info widget with the associated actions
-        // and add it to the top-right corner of the view.
-        // ***************************************************** 
+        
         
           
           
@@ -902,6 +1009,11 @@
     </div>
     <div id="infoToolbar" class="esri-widget">
         <h3>Sequoia and Kings Canyon Tree Locator</h3>
+        The Giant Sequoia is the most massive type of tree in the world. While it is well adapted to natural fire conditions, because of changing climate conditions and fire supression methods, the Sequoia are at much greater risk of destructive fires today, including in the summer of 2021. As a result, the park has decided to task both its own staff and volunteers to inventory all of the Giant Sequoias within the known groves in the park.
+        <br><br>
+        To use this application, click on the tools to the right of the map. The primary tool is an editor tool to add a new tree entry or edit existing information. There is also a filter to turn on/off Points of Interest and a query tool to find Points of Interest near the user's location. Finally, there are tools for searching for locations, turning on/off data layers and for viewing a legend.
+        <br>
+        <h6>Data and symbology courtesy National Park Service. Created by Greg Grube for Geography 777 at UW-Madison, Spring 2022.</h6>
     </div>
     <div id="poi-filter" class="esri-widget">
       <div class="poi-item visible-poi" data-poi="Restroom">Restroom</div>
@@ -916,9 +1028,6 @@
       <div class="poi-item visible-poi" data-poi="Visitor Center">Visitor Center</div>
     </div>
     <div id="optionsDiv" class="esri-widget">
-      <p>
-        Select a query type and click a point on the map to view the results.
-      </p>
       <select id="query-type" class="esri-widget">
         <option value="distance">1/2 Mile</option>
         <option value="OneMile">One Mile</option>
