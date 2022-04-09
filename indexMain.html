@@ -18,6 +18,7 @@
     <style>
       html,
       body,
+        
       #viewDiv {
         padding: 0;
         margin: 0;
@@ -36,14 +37,13 @@
         padding: 14px;
         border-radius: 5px;
         width: 250px;
-        background-color: black;
-        color: white;
+        
       }
         
-      #queryDiv {
-        padding: 14px;
+      #query-type {
+        padding: 8px;
         border-radius: 5px;
-        width: 35%;
+        width: 120px;
       }
         
      #pois-filter {
@@ -69,6 +69,54 @@
       .poi-item:hover {
         background-color: dimgrey;
       }
+      
+        
+      /*.sassy-theme .esri-widget,
+      .sassy-theme .esri-widget--button,
+      .sassy-theme .esri-menu,
+      .sassy-theme .esri-popup__main-container,
+      .sassy-theme .esri-popup .esri-popup__pointer-direction,
+      .sassy-theme .esri-popup .esri-popup__button,
+      .sassy-theme .esri-button,
+      .sassy-theme .esri-input,
+      .sassy-theme .esri-widget a {
+        background-color: #000000;
+        color: #ffffff;
+      }
+          
+      .sassy-theme .esri-widget--button:focus,
+      .sassy-theme .esri-widget--button:hover,
+      .sassy-theme .esri-menu li:focus,
+      .sassy-theme .esri-menu li:hover {
+        background-color: #56903A;
+        color: #fff;
+      }
+
+      .sassy-theme .esri-button:focus,
+      .sassy-theme .esri-button:hover {
+        color: #fff;
+      }
+        
+     */
+        
+    .esri-editor .esri-item-list__scroller {
+        max-height: 100%;
+        max-width: 250px;
+      }
+        
+      .esri-view-height-small .esri-expand .esri-widget--panel, .esri-view-height-small .esri-expand .esri-widget--panel-height-only, .esri-view-height-small .esri-ui-corner .esri-component.esri-widget--panel, .esri-view-height-small .esri-ui-corner .esri-component.esri-widget--panel-height-only {
+          max-height: 650px;
+          min-height: 60%;
+          max-width: 250px;
+      }
+      .esri-ui .esri-editor .esri-item-list__scroller {
+          max-height: 100%;
+          max-width: 250px;
+      }   
+      
+
+     
+          
         
         
     </style>
@@ -142,7 +190,7 @@
           opacity: 0.5,
           title: "Sequoia Groves",
           visible: true,
-//          popupTemplate: {
+//          labelingInfo: {
 //            // autocasts as new PopupTemplate()
 //            title: "{Grove_Name}",
             overwriteActions: true
@@ -158,7 +206,8 @@
           visible: true,
           popupTemplate: {
             // autocasts as new PopupTemplate()
-            title: "Road Name: {RDNAME} </br>Road Class: {RDCLASS}",
+            title: "{RDNAME}",
+            content: "Road Class: {RDCLASS}",
             overwriteActions: true
           }
         });
@@ -172,7 +221,8 @@
           visible: true,
           popupTemplate: {
             // autocasts as new PopupTemplate()
-            title: "Trail Name: {TRLNAME} </br>Trail Class: {TRLCLASS}",
+            title: "Trail: {TRLNAME}",
+            content: "Trail {TRLCLASS}",
             overwriteActions: true
           }
         });
@@ -275,12 +325,11 @@
           renderer: layerPOIRenderer,
           popupTemplate: {
             // autocasts as new PopupTemplate()
-            title: "Feature: {POINAME} </br>Feature Type: {POITYPE}",
+            title: "Feature: {POINAME}",
+            content: "Feature Type: {POITYPE}",
             overwriteActions: true
           }
         });
-        
-        
         
         // add the park fire history featurelayer
         var layerFireHistory = new FeatureLayer({
@@ -288,7 +337,7 @@
           //outFields: ["*"],
           opacity: 0.8,
           title: "Fire History",
-          visible: false
+          visible: false,
         });
           
         // Create the Map
@@ -501,7 +550,8 @@
           renderer: layerTreesRenderer,
           popupTemplate: {
             // autocasts as new PopupTemplate()
-            title: "Tree Condition - {OverallCon}</br>Grove: {GroveName} </br>Tree Diameter: {TreeDiam} </br>Surface Fuel Level: {SurFuel} </br>Burn Damage: {BurnDamage} </br>Collector Name: {UserName} </br>Collector Role: {UserType}",
+            title: "Tree Condition - {OverallCon}",
+            content: "</br>Grove: {GroveName} </br>Tree Diameter: {TreeDiam} </br>Surface Fuel Level: {SurFuel} </br>Burn Damage: {BurnDamage} </br>Collector Name: {UserName} </br>Collector Role: {UserType}",
             overwriteActions: true
           }
           //popupTemplate: template
@@ -568,6 +618,31 @@
           
         // Add widget to the top right corner of the view
         view.ui.add(basemapToggle, "bottom-left");
+          
+        // *****************************************************
+        // Create tooltip widget with the associated actions
+        // and add it to the top-right corner of the view.
+        // ***************************************************** 
+        
+        //add text information
+        let tooltip = document.getElementById("info")
+          
+        
+        let tooltipExpand = new Expand({
+              expandIconClass: "esri-icon-comment",
+              expandTooltip: "Expand Tooltip",
+              view: view,
+              expanded: true,
+              content: tooltip,
+              mode: "floating",
+              group: "top-left"
+            });
+          
+        //add text information
+          view.ui.add(tooltipExpand, {
+            position: "top-left",
+            //index: 1
+            });
         
         // *****************************************************
         // Create and intro message widget with the associated actions
@@ -717,9 +792,13 @@
           var editor = new Editor({
             view: view,
             container: document.createElement("div"),
+            visibleElements: {
+                filter: false, // disable the default filter UI
+            },
             layerInfos: [
               {
                 layer: layerTrees,
+                
                 formTemplate: {
                   // autocasts to FormTemplate
                   elements: [
@@ -728,43 +807,44 @@
                       type: "field",
                       fieldName: "UserName",
                       label: "User Name",
-                      editable: true
+                      editable: true,
+                      hint: "Enter your name"
                     },
                     {
                       type: "field",
                       fieldName: "UserType",
                       label: "User Type",
-                      hint: "Select Role"
+                      hint: "Select user role"
                     },
                     {
                       type: "field",
                       fieldName: "GroveName",
                       label: "Grove Name",
-                      hint: "Where is the tree located?"
+                      hint: "Select grove location"
                     },
                     {
                       type: "field",
                       fieldName: "TreeDiam",
                       label: "Tree Diameter",
-                      hint: "What is the trunk thickness?"
+                      hint: "Select trunk thickness"
                     },
                     {
                       type: "field",
                       fieldName: "SurFuel",
                       label: "Surface Fuel",
-                      hint: "How much built up fuel is there?"
+                      hint: "Select fuel buildup level"
                     },
                     {
                       type: "field",
                       fieldName: "BurnDamage",
                       label: "Burn Damage",
-                      hint: "What is the burn damage on the tree?"
+                      hint: "Select tree burn damage"
                     },
                     {
                       type: "field",
                       fieldName: "OverallCon",
                       label: "Overall Condition",
-                      hint: "What is the overall condition?"
+                      hint: "Select overall condition"
                     },
                     
                   ]
@@ -989,7 +1069,8 @@
             }
           });
           //view.ui.add(poisExpand, "top-right");
-          view.ui.add([infoToolbarExpand, editExpand, searchExpand, poisExpand, queryExpand, legendExpand, layerListExpand], "top-right");
+          view.ui.add([infoToolbarExpand, editExpand, legendExpand, searchExpand, poisExpand, queryExpand, layerListExpand], "top-right");
+            
         });
           
         
@@ -1003,7 +1084,8 @@
   </head>
 
   <body>
-    <div id="viewDiv"></div>
+    <body class="sassy-theme">
+        <div id="viewDiv"></div>
     <div id="info" class="esri-widget">   
       Select a tool on the right to use that specific function.
     </div>
