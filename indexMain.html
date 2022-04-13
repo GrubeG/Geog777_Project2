@@ -38,6 +38,7 @@
         padding: 14px;
         border-radius: 5px;
         width: 250px;
+        text-align: center;
         
       }
         
@@ -70,35 +71,11 @@
       .poi-item:hover {
         background-color: dimgrey;
       }
+        
+      div.image::before {
+        content:url("img/SEKI_logo.PNG");
+      }
       
-        
-      /*.sassy-theme .esri-widget,
-      .sassy-theme .esri-widget--button,
-      .sassy-theme .esri-menu,
-      .sassy-theme .esri-popup__main-container,
-      .sassy-theme .esri-popup .esri-popup__pointer-direction,
-      .sassy-theme .esri-popup .esri-popup__button,
-      .sassy-theme .esri-button,
-      .sassy-theme .esri-input,
-      .sassy-theme .esri-widget a {
-        background-color: #000000;
-        color: #ffffff;
-      }
-          
-      .sassy-theme .esri-widget--button:focus,
-      .sassy-theme .esri-widget--button:hover,
-      .sassy-theme .esri-menu li:focus,
-      .sassy-theme .esri-menu li:hover {
-        background-color: #56903A;
-        color: #fff;
-      }
-
-      .sassy-theme .esri-button:focus,
-      .sassy-theme .esri-button:hover {
-        color: #fff;
-      }
-        
-     */
         
     .esri-editor .esri-item-list__scroller {
         max-height: 100%;
@@ -142,6 +119,7 @@
         "esri/symbols/SimpleMarkerSymbol",
         "esri/widgets/BasemapToggle",
         "esri/widgets/Legend",
+        "esri/widgets/FeatureTemplates",
         "esri/config",
         
           
@@ -169,6 +147,7 @@
         SimpleMarkerSymbol,
         BasemapToggle,
         Legend,
+        FeatureTemplates,
         esriConfig,
         on, dom, domConstruct
       ) => {
@@ -209,7 +188,7 @@
             // autocasts as new PopupTemplate()
             title: "{RDNAME}",
             content: "Road Class: {RDCLASS}",
-            overwriteActions: true
+            overwriteActions: false
           }
         });
         
@@ -224,7 +203,7 @@
             // autocasts as new PopupTemplate()
             title: "Trail: {TRLNAME}",
             content: "Trail {TRLCLASS}",
-            overwriteActions: true
+            overwriteActions: false
           }
         });
           
@@ -328,7 +307,7 @@
             // autocasts as new PopupTemplate()
             title: "Feature: {POINAME}",
             content: "Feature Type: {POITYPE}",
-            overwriteActions: true
+            overwriteActions: false
           }
         });
         
@@ -421,7 +400,7 @@
             ];
           }
         }
-          
+        
           
         /*************************************************************
          * The PopupTemplate content is the text that appears inside the
@@ -547,7 +526,7 @@
             // autocasts as new PopupTemplate()
             title: "Tree Condition - {OverallCon}",
             content: "</br>Grove: {GroveName} </br>Tree Diameter: {TreeDiam} </br>Surface Fuel Level: {SurFuel} </br>Burn Damage: {BurnDamage} </br>Collector Name: {UserName} </br>Collector Role: {UserType}",
-            overwriteActions: true
+            overwriteActions: false
           }
           //popupTemplate: template
         });
@@ -562,6 +541,11 @@
         });
           
         setupView();
+        
+        view.popup.dockOptions = {
+              // Disable the dock button so users cannot undock the popup
+              position: "bottom-right",
+        };
           
         // *****************************************************
         // Create the LayerList widget with the associated actions
@@ -671,7 +655,7 @@
         // ***************************************************** 
           
         let legend = new Legend({
-            view: view
+            view: view,
         });
         
         let legendExpand = new Expand({
@@ -729,9 +713,10 @@
             {
               layer: layerGroves,
               searchFields: ["Grove_Name"],
-              //suggestionTemplate: "{Name}, Party: {Party}",
+              //suggestionTemplate: "{Grove_Name}",
               exactMatch: false,
-              outFields: ["Grove_Name"],
+              //outFields: ["Grove_Name"],
+              resultGraphicEnabled: false,
               placeholder: "Example: Atwell",
               name: "Sequoia Grove",
 
@@ -787,9 +772,14 @@
           var editor = new Editor({
             view: view,
             container: document.createElement("div"),
-            visibleElements: {
-                filter: false, // disable the default filter UI
+            supportingWidgetDefaults: {
+              featureTemplates: {
+                visibleElements: {
+                    filter: false, // disable the default filter UI
+                }
+              }
             },
+                
             layerInfos: [
               {
                 layer: layerTrees,
@@ -967,6 +957,11 @@
                 features: featureSet.features,
                 featureMenuOpen: true
               });
+              view.popup.dockOptions = {
+                  // Disable the dock button so users cannot undock the popup
+                  position: "bottom-right",
+                };
+              
               if (featureSet.queryGeometry) {
                 bufferGraphic.geometry = featureSet.queryGeometry;
                 view.graphics.add(bufferGraphic);
@@ -1085,12 +1080,14 @@
       Select a tool on the right to use that specific function.
     </div>
     <div id="infoToolbar" class="esri-widget">
-        <h3>Sequoia and Kings Canyon Tree Locator</h3>
-        The Giant Sequoia is the most massive type of tree in the world. While it is well adapted to natural fire conditions, because of changing climate conditions and fire supression methods, the Sequoia are at much greater risk of destructive fires today, including in the summer of 2021. As a result, the park has decided to task both its own staff and volunteers to inventory all of the Giant Sequoias within the known groves in the park.
+        <div class="image"></div>
+        <h3>Tree Locator Application</h3>
+        The Giant Sequoia is the most massive type of tree in the world. While it is well adapted to natural fire conditions, because of changing climate conditions and fire supression methods, the Sequoia are at much greater risk of destructive fires today, including those in the summer of 2021. As a result, the park has decided to task both its own staff and volunteers to inventory the Giant Sequoias within the known groves in the park.
         <br><br>
-        To use this application, click on the tools to the right of the map. The primary tool is an editor tool to add a new tree entry or edit existing information. There is also a filter to turn on/off Points of Interest and a query tool to find Points of Interest near the user's location. Finally, there are tools for searching for locations, turning on/off data layers and for viewing a legend.
+        To use this application, click on the tools to the right of the map. The primary tool is an editor tool to add a new tree entry or edit existing information. There is also a filter for Points of Interest and a query tool to find Points of Interest near the user's location. Finally, there are tools for searching for locations, turning on/off data layers and for viewing a legend.
         <br>
         <h6>Data and symbology courtesy National Park Service. Created by Greg Grube for Geography 777 at UW-Madison, Spring 2022.</h6>
+<!--        <div class="image"></div>-->
     </div>
     <div id="poi-filter" class="esri-widget">
       <div class="poi-item visible-poi" data-poi="Restroom">Restroom</div>
