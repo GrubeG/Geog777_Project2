@@ -90,12 +90,7 @@
       .esri-ui .esri-editor .esri-item-list__scroller {
           max-height: 100%;
           max-width: 250px;
-      }   
-      
-
-     
-          
-        
+      }    
         
     </style>
     <script>
@@ -113,7 +108,6 @@
         "esri/Viewpoint",
         "esri/widgets/Locate",
         "esri/layers/GraphicsLayer",
-        "esri/geometry/geometryEngine",
         "esri/Graphic",
         "esri/symbols/SimpleFillSymbol",
         "esri/symbols/SimpleMarkerSymbol",
@@ -141,7 +135,6 @@
         Viewpoint,
         Locate,
         GraphicsLayer,
-        geometryEngine,
         Graphic,
         SimpleFillSymbol,
         SimpleMarkerSymbol,
@@ -186,7 +179,7 @@
           visible: true,
           popupTemplate: {
             // autocasts as new PopupTemplate()
-            title: "{RDNAME}",
+            title: "Road: {RDNAME}",
             content: "Road Class: {RDCLASS}",
             overwriteActions: false
           }
@@ -326,10 +319,10 @@
           layers: [layerBoundary, layerFireHistory, layerGroves, layerTrails, layerRoads, layerPOI]
         });
           
-        let editor, features, editExpand, floodLayerView, queryLayerView;
+        let editor, features, editExpand, filterLayerView, queryLayerView;
           
           
-         // *****************************************************
+        // *****************************************************
         // add homeButton and expand widgets to UI
         // *****************************************************
         function setupView() {
@@ -438,33 +431,7 @@
 
           const textElement = new TextContent();
 
-//          const level = feature.graphic.attributes.OverallCon;
-//          const green =
-//            "<b><span style='color:green'>" + level + "</span></b>.";
-//          const purple =
-//            "<b><span style='color:purple'>" + level + "</span></b>.";
-//          const red = "<b><span style='color:red'>" + level + "</span></b>.";
-
-          // If the feature's "OverallCon" attribute is a specific value, set it a certain color
-          // "easy" = green
-          // "medium" = purple
-          // "hard" = red
-//          switch (level) {
-//            case "easy":
-//              textElement.text =
-//                "The {UserName} trail has a OverallCon level of " + green;
-//              return [textElement, attachmentsElement];
-//              break;
-//            case "medium":
-//              textElement.text =
-//                "The {UserName} trail has a OverallCon level of " + purple;
-//              return [textElement, attachmentsElement];
-//              break;
-//            case "hard":
-//              textElement.text =
-//                "The {UserName} trail has a OverallCon level of " + red;
-//              return [textElement, attachmentsElement];
-//          }
+          
         }
         // View how each marker
         // symbol is created for Points of Interest
@@ -580,10 +547,7 @@
               fieldNameText.textContent = "Select a tool on the right to use that specific function.";
             }
           });
-//            view.ui.add(layerListExpand, {
-//                position: "bottom-left",
-//                index: 1
-//            });
+
           
         // *****************************************************
         // Create the Basemap Toggle widget with the associated actions
@@ -642,10 +606,7 @@
               group: "top-right"
             });
           
-//        view.ui.add("infoToolbar", {
-//            position: "top-right",
-//            //index: 1
-//            });
+
           
          
         
@@ -680,8 +641,6 @@
               fieldNameText.textContent = "Select a tool on the right to use that specific function.";
             }
           });
-
-        //view.ui.add(legend, "bottom-right");
         
           
         // *****************************************************
@@ -703,12 +662,7 @@
               name: "Point of Interest",
               zoomScale: 10000,
               placeholder: "Example: Sherman Tree"
-//              resultSymbol: {
-//                type: "picture-marker", // autocasts as new PictureMarkerSymbol()
-//                url: "https://developers.arcgis.com/javascript/latest/sample-code/widgets-search-multiplesource/live/images/senate.png",
-//                height: 36,
-//                width: 36
-//              }
+
             },
             {
               layer: layerGroves,
@@ -758,8 +712,6 @@
             }
           });
 
-        // Add the search widget to the top left corner of the view
-        //view.ui.add(searchWidget, {position: "top-right"});
       
           
         // *****************************************************
@@ -862,7 +814,6 @@
             }
           });
             
-          //view.ui.add(editExpand, "top-right");
           
             
         });
@@ -927,12 +878,6 @@
               units = "miles";
           }
         });
-//        layerGroves.load().then(() => {
-//          // Set the view extent to the data extent
-//          //view.extent = layerGroves.fullExtent;
-//          layerGroves.popupTemplate = layerGroves.createPopupTemplate();
-//        });
-
         
 
         function queryFeatures(screenPoint) {
@@ -949,8 +894,9 @@
             })
             .then((featureSet) => {
               // set graphic location to mouse pointer and add to mapview
-              pointGraphic.geometry = point;
-              view.graphics.add(pointGraphic);
+//              pointGraphic.geometry = point;
+//              view.graphics.add(pointGraphic);
+              
               // open popup of query result
               view.popup.open({
                 location: point,
@@ -958,13 +904,16 @@
                 featureMenuOpen: true
               });
               view.popup.dockOptions = {
-                  // Disable the dock button so users cannot undock the popup
+                  // Change position of the default docking
                   position: "bottom-right",
                 };
+              // The popup will automatically be dockEnabled when made visible
+              view.popup.dockEnabled = true;
               
               if (featureSet.queryGeometry) {
                 bufferGraphic.geometry = featureSet.queryGeometry;
                 view.graphics.add(bufferGraphic);
+                view.goTo(bufferGraphic);
               }
             });
         }
@@ -1005,8 +954,6 @@
             }
           }); 
           
-          //view.ui.add(queryExpand, "top-right");
-          
         // *****************************************************
         // Create the Filter widget with the associated actions
         // and add it to the top-right corner of the view.
@@ -1018,20 +965,19 @@
         // click event handler for pois choices
         poisElement.addEventListener("click", filterBypoi);
 
-        // User clicked on Winter, Spring, Summer or Fall
-        // set an attribute filter on flood warnings layer view
+        // set an attribute filter on filter layer view
         // to display the warnings issued in that poi
         function filterBypoi(event) {
           const selectedpoi = event.target.getAttribute("data-poi");
-          floodLayerView.filter = {
+          filterLayerView.filter = {
             where: "POITYPE = '" + selectedpoi + "'"
           };
         }
 
         view.whenLayerView(layerPOI).then((layerView) => {
-          // flash flood warnings layer loaded
-          // get a reference to the flood warnings layerview
-          floodLayerView = layerView;
+          // flash filter warnings layer loaded
+          // get a reference to the filter warnings layerview
+          filterLayerView = layerView;
 
           // set up UI items
           poisElement.style.visibility = "visible";
@@ -1053,7 +999,7 @@
             }
             //clear the filters when user closes the expand widget  
             if (!poisExpand.expanded) {
-              floodLayerView.filter = null;
+              filterLayerView.filter = null;
               var fieldNameText = document.getElementById('info');
               fieldNameText.textContent = "Select a tool on the right to use that specific function.";
             }
@@ -1087,7 +1033,7 @@
         To use this application, click on the tools to the right of the map. The primary tool is an editor tool to add a new tree entry or edit existing information. There is also a filter for Points of Interest and a query tool to find Points of Interest near the user's location. Finally, there are tools for searching for locations, turning on/off data layers and for viewing a legend.
         <br>
         <h6>Data and symbology courtesy National Park Service. Created by Greg Grube for Geography 777 at UW-Madison, Spring 2022.</h6>
-<!--        <div class="image"></div>-->
+
     </div>
     <div id="poi-filter" class="esri-widget">
       <div class="poi-item visible-poi" data-poi="Restroom">Restroom</div>
